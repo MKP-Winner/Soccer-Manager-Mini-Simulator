@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Soccer Manager Mini-Sim</title>
+  <style>
+    /* Basic styles */
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: #f0f0f0;
+      color: #333;
+    }
+    select, button {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      font-size: 1rem;
+    }
+    #alert-box, #explosion-message, #playAgain {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 5px;
+      display: none;
+    }
+    #alert-box {
+      background: #ffdddd;
+      color: #b30000;
+    }
+    #explosion-message {
+      background: #ffcc00;
+      color: #663300;
+    }
+    .hidden {
+      display: none !important;
+    }
+    #commentary {
+      white-space: pre-line;
+      margin-top: 1rem;
+      background: white;
+      padding: 1rem;
+      border-radius: 5px;
+      min-height: 80px;
+    }
+    #scoreboard span {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Soccer Manager Mini-Sim</h1>
+
+  <label for="teamA">Select Team A:</label><br />
+  <select id="teamA"></select><br />
+
+  <label for="teamB">Select Team B:</label><br />
+  <select id="teamB"></select><br />
+
+  <button id="playMatch">Play Match</button>
+
+  <div id="alert-box">
+    ⚠️ Time Bomb! Substitution countdown: <span id="countdown"></span> seconds
+    <br />
+    <button id="substitute-btn">Substitute Player</button>
+  </div>
+
+  <div id="explosion-message"></div>
+
+  <div id="commentary">Select your teams to play.</div>
+
+  <div id="scoreboard" style="margin-top: 1rem;">
+    Wins: <span id="wins">0</span> |
+    Losses: <span id="losses">0</span> |
+    Draws: <span id="draws">0</span>
+  </div>
+
+  <button id="playAgain" class="hidden">Play Again</button>
+
+  <script>
+  // ==============================
+  // ⚽ Soccer Manager Mini-Sim JS
+  // ==============================
+
+  // --- Teams by Major Leagues ---
+  const teams = {
+    // English Premier League
+    "Manchester United": 88,
+    "Liverpool": 90,
+    "Manchester City": 92,
+    "Chelsea": 87,
+    "Arsenal": 86,
+    "Tottenham Hotspur": 85,
+    "Leicester City": 83,
+    "West Ham United": 82,
+    "Everton": 80,
+    "Newcastle United": 84,
+
+    // La Liga (Spain)
+    "Real Madrid": 91,
+    "Barcelona": 90,
+    "Atletico Madrid": 88,
+    "Sevilla": 85,
+    "Valencia": 82,
+    "Real Sociedad": 83,
+    "Villarreal": 81,
+    "Athletic Bilbao": 80,
+    "Betis": 79,
+    "Celta Vigo": 78,
+
+    // Serie A (Italy)
+    "Juventus": 89,
+    "AC Milan": 88,
+    "Inter Milan": 90,
+    "Napoli": 87,
+    "Roma": 85,
+    "Lazio": 84,
+    "Atalanta": 83,
+    "Fiorentina": 81,
+    "Torino": 80,
+    "Sassuolo": 78,
+
+    // Bundesliga (Germany)
+    "Bayern Munich": 92,
+    "Borussia Dortmund": 88,
+    "RB Leipzig": 85,
+    "Bayer Leverkusen": 84,
+    "VfL Wolfsburg": 82,
+    "Eintracht Frankfurt": 81,
+    "Borussia Monchengladbach": 80,
+    "FC Cologne": 78,
+    "Freiburg": 77,
+    "Union Berlin": 79,
+
+    // Ligue 1 (France)
+    "Paris Saint-Germain": 92,
+    "Marseille": 85,
+    "Monaco": 84,
+    "Lyon": 83,
+    "Rennes": 81,
+    "Lille": 82,
+    "Nice": 79,
+    "Lens": 78,
+    "Strasbourg": 77,
+    "Montpellier": 76
+  };
+
+  // --- Scoreboard variables ---
+  let winCount = 0;
+  let lossCount = 0;
+  let drawCount = 0;
+
+  // --- Element references ---
+  const teamASelect = document.getElementById("teamA");
+  const teamBSelect = document.getElementById("teamB");
+  const playBtn = document.getElementById("playMatch");
+  const commentary = document.getElementById("commentary");
+  const wins = document.getElementById("wins");
+  const losses = document.getElementById("losses");
+  const draws = document.getElementById("draws");
+  const alertBox = document.getElementById("alert-box");
+  const countdownEl = document.getElementById("countdown");
+  const substituteBtn = document.getElementById("substitute-btn");
+  const explosionMessage = document.getElementById("explosion-message");
+  const playAgainBtn = document.getElementById("playAgain");
+
+  // Populate team dropdowns
+  function populateTeams() {
+    for (const team in teams) {
+      const optionA = document.createElement("option");
+      optionA.value = team;
+      optionA.textContent = team;
+      teamASelect.appendChild(optionA);
+
+      const optionB = document.createElement("option");
+      optionB.value = team;
+      optionB.textContent = team;
+      teamBSelect.appendChild(optionB);
+    }
+    // Default selections
+    teamASelect.selectedIndex = 0;
+    teamBSelect.selectedIndex = 1;
+  }
+
+  populateTeams();
+
+  // ==============================
+  // 🧠 MAIN MATCH LOGIC
+  // ==============================
+
+  playBtn.addEventListener("click", () => {
+    const teamA = teamASelect.value;
+    const teamB = teamBSelect.value;
+    if (teamA === teamB) {
+      commentary.textContent = "⚠️ Please select two different teams!";
+      return;
+    }
+
+    playBtn.disabled = true;
+    playAgainBtn.classList.add("hidden");
+    commentary.textContent = "🏟️ Kickoff!";
+    explosionMessage.classList.add("hidden");
+
+    // Simulate match timeline
+    simulateMatch(teamA, teamB);
+  });
+
+  function simulateMatch(teamA, teamB) {
+    const teamARating = teams[teamA];
+    const teamBRating = teams[teamB];
+
+    // Randomize goals (factor in team rating)
+    const teamAScore = Math.floor(Math.random() * (teamARating / 25));
+    const teamBScore = Math.floor(Math.random() * (teamBRating / 25));
+
+    // Time Bomb triggers after 3 seconds
+    setTimeout(() => {
+      startTimeBombEvent(teamA);
+    }, 3000);
+
+    // Fake live commentary
+    setTimeout(() => (commentary.textContent = `${teamA} is attacking...`), 1000);
+    setTimeout(() => (commentary.textContent = `${teamB} takes possession...`), 2000);
+    setTimeout(() => (commentary.textContent = `🔥 Close shot from ${teamA}!`), 4000);
+    setTimeout(() => (commentary.textContent = `⚽ Goal by ${teamB}!`), 6000);
+    setTimeout(() => {
+      commentary.textContent = `🏁 Final Score: ${teamA} ${teamAScore} - ${teamBScore} ${teamB}`;
+      showResult(teamA, teamB, teamAScore, teamBScore);
+    }, 9000);
+  }
+
+  function showResult(teamA, teamB, scoreA, scoreB) {
+    let result = "";
+
+    if (scoreA > scoreB) {
+      result = `🏆 ${teamA} Wins!`;
+      winCount++;
+      wins.textContent = winCount;
+    } else if (scoreB > scoreA) {
+      result = `❌ ${teamB} Wins!`;
+      lossCount++;
+      losses.textContent = lossCount;
+    } else {
+      result = "🤝 It's a Draw!";
+      drawCount++;
+      draws.textContent = drawCount;
+    }
+
+    commentary.textContent += `\n${result}`;
+    playAgainBtn.classList.remove("hidden");
+    playBtn.disabled = false;
+  }
+
+  // ==============================
+  // 💣 TIME BOMB FEATURE
+  // ==============================
+  function startTimeBombEvent(teamA) {
+    alertBox.classList.remove("hidden");
+    let countdown = 10;
+    countdownEl.textContent = countdown;
+    commentary.textContent = `⚠️ ALERT! ${teamA}'s best player has a TIME BOMB!`;
+
+    const timer = setInterval(() => {
+      countdown--;
+      countdownEl.textContent = countdown;
+
+      if (countdown <= 0) {
+        clearInterval(timer);
+        playerExplodes(teamA);
+      }
+    }, 1000);
+
+    substituteBtn.onclick = () => {
+      clearInterval(timer);
+      alertBox.classList.add("hidden");
+      commentary.textContent = `✅ You substituted your player in time!`;
+      teams[teamA] -= 2; // slight penalty for substitution
+    };
+  }
+
+  function playerExplodes(teamA) {
+    alertBox.classList.add("hidden");
+    explosionMessage.classList.remove("hidden");
+    explosionMessage.textContent = `💥 ${teamA}'s best player exploded! Team rating -5`;
+    teams[teamA] -= 5;
+    commentary.textContent = `😱 ${teamA} lost their best player!`;
+  }
+
+  // ==============================
+  // 🔁 Play Again Button
+  // ==============================
+  playAgainBtn.addEventListener("click", () => {
+    commentary.textContent = "Select your teams to play again.";
+    playAgainBtn.classList.add("hidden");
+    explosionMessage.classList.add("hidden");
+  });
+  </script>
+</body>
+</html>
