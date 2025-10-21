@@ -2,9 +2,8 @@
 // ⚽ Soccer Manager Mini-Sim Script
 // ===================================
 
-// ====== TEAM DATABASE ======
+
 const teams = {
-  // English Premier League (EPL)
   "Manchester United": 88,
   "Liverpool": 90,
   "Manchester City": 92,
@@ -16,7 +15,6 @@ const teams = {
   "Everton": 80,
   "Newcastle United": 84,
 
-  // La Liga
   "Real Madrid": 91,
   "Barcelona": 90,
   "Atletico Madrid": 88,
@@ -28,7 +26,6 @@ const teams = {
   "Betis": 79,
   "Celta Vigo": 78,
 
-  // Serie A
   "Juventus": 89,
   "AC Milan": 88,
   "Inter Milan": 90,
@@ -40,7 +37,6 @@ const teams = {
   "Torino": 80,
   "Sassuolo": 78,
 
-  // Bundesliga
   "Bayern Munich": 92,
   "Borussia Dortmund": 88,
   "RB Leipzig": 85,
@@ -52,7 +48,6 @@ const teams = {
   "Freiburg": 77,
   "Union Berlin": 79,
 
-  // Ligue 1
   "Paris Saint-Germain": 92,
   "Marseille": 85,
   "Monaco": 84,
