@@ -1,5 +1,5 @@
-// ===================================
-// ⚽ Soccer Manager Mini-Sim Script (with halves)
+// =================================== 
+// ⚽ Soccer Manager Mini-Sim Script
 // ===================================
 
 // ====== TEAM RATINGS ======
@@ -18,185 +18,178 @@ const teams = {
   "Nice": 79, "Lens": 78, "Strasbourg": 77, "Montpellier": 76
 };
 
-// ====== ANTHEM PATHS ======
-const anthems = {
-  "Manchester United": "sounds/man_united.mp3",
-  "Liverpool": "sounds/liverpool.mp3",
-  "Manchester City": "sounds/man_city.mp3",
-  "Chelsea": "sounds/chelsea.mp3",
-  "Arsenal": "sounds/arsenal.mp3",
-  "Tottenham Hotspur": "sounds/tottenham.mp3",
-  "Leicester City": "sounds/leicester.mp3",
-  "West Ham United": "sounds/west_ham.mp3",
-  "Everton": "sounds/everton.mp3",
-  "Newcastle United": "sounds/newcastle.mp3",
-  "Real Madrid": "sounds/real_madrid.mp3",
-  "Barcelona": "sounds/barcelona.mp3",
-  "Atletico Madrid": "sounds/atletico.mp3",
-  "Sevilla": "sounds/sevilla.mp3",
-  "Valencia": "sounds/valencia.mp3",
-  "Real Sociedad": "sounds/real_sociedad.mp3",
-  "Villarreal": "sounds/villarreal.mp3",
-  "Athletic Bilbao": "sounds/athletic_bilbao.mp3",
-  "Betis": "sounds/betis.mp3",
-  "Celta Vigo": "sounds/celta_vigo.mp3",
-  "Juventus": "sounds/juventus.mp3",
-  "AC Milan": "sounds/ac_milan.mp3",
-  "Inter Milan": "sounds/inter_milan.mp3",
-  "Napoli": "sounds/napoli.mp3",
-  "Roma": "sounds/roma.mp3",
-  "Lazio": "sounds/lazio.mp3",
-  "Atalanta": "sounds/atalanta.mp3",
-  "Fiorentina": "sounds/fiorentina.mp3",
-  "Torino": "sounds/torino.mp3",
-  "Sassuolo": "sounds/sassuolo.mp3",
-  "Bayern Munich": "sounds/bayern.mp3",
-  "Borussia Dortmund": "sounds/dortmund.mp3",
-  "RB Leipzig": "sounds/leipzig.mp3",
-  "Bayer Leverkusen": "sounds/leverkusen.mp3",
-  "VfL Wolfsburg": "sounds/wolfsburg.mp3",
-  "Eintracht Frankfurt": "sounds/frankfurt.mp3",
-  "Borussia Monchengladbach": "sounds/monchengladbach.mp3",
-  "FC Cologne": "sounds/cologne.mp3",
-  "Freiburg": "sounds/freiburg.mp3",
-  "Union Berlin": "sounds/union_berlin.mp3",
-  "Paris Saint-Germain": "sounds/psg.mp3",
-  "Marseille": "sounds/marseille.mp3",
-  "Monaco": "sounds/monaco.mp3",
-  "Lyon": "sounds/lyon.mp3",
-  "Rennes": "sounds/rennes.mp3",
-  "Lille": "sounds/lille.mp3",
-  "Nice": "sounds/nice.mp3",
-  "Lens": "sounds/lens.mp3",
-  "Strasbourg": "sounds/strasbourg.mp3",
-  "Montpellier": "sounds/montpellier.mp3"
-};
-
-// ====== HTML ELEMENTS ======
+// ====== HTML REFERENCES ======
 const teamASelect = document.getElementById("teamA");
 const teamBSelect = document.getElementById("teamB");
-const resultDisplay = document.getElementById("result");
-const playBtn = document.getElementById("playBtn");
-const substituteBtn = document.getElementById("subBtn");
-const timerDisplay = document.getElementById("timerDisplay");
+const playBtn = document.getElementById("playMatch");
+const commentary = document.getElementById("commentary");
 const stadium = document.getElementById("stadium");
-const anthemPlayer = document.getElementById("anthemPlayer");
+const alertBox = document.getElementById("alert-box");
+const countdownEl = document.getElementById("countdown");
+const countdownBar = document.getElementById("countdownBar");
+const substituteBtn = document.getElementById("substitute-btn");
+const explosionMsg = document.getElementById("explosion-message");
+const playAgainBtn = document.getElementById("playAgain");
+const wins = document.getElementById("wins");
+const losses = document.getElementById("losses");
+const draws = document.getElementById("draws");
+const helpBtn = document.getElementById("help-btn");
+const helpModal = document.getElementById("help-modal");
+const closeHelp = document.getElementById("close-help");
+const anthemPlayer = document.getElementById("anthem-player");
+const matchTimeDisplay = document.getElementById("matchTime");
+const liveScoreDisplay = document.getElementById("liveScore");
 
-// ====== SETUP ======
+let matchTimer, timeElapsed, teamAScore, teamBScore;
+let winCount = 0, lossCount = 0, drawCount = 0;
+let countdownTimer;
+
+// ====== POPULATE TEAMS ======
 for (let team in teams) {
-  [teamASelect, teamBSelect].forEach(select => {
-    const opt = document.createElement("option");
-    opt.value = team;
-    opt.textContent = team;
-    select.appendChild(opt);
-  });
+  let optionA = document.createElement("option");
+  optionA.value = team;
+  optionA.textContent = team;
+  teamASelect.appendChild(optionA);
+
+  let optionB = document.createElement("option");
+  optionB.value = team;
+  optionB.textContent = team;
+  teamBSelect.appendChild(optionB);
 }
+teamASelect.selectedIndex = 0;
+teamBSelect.selectedIndex = 1;
 
-let matchDuration = 90;  // seconds = 90 "minutes"
-let bestPlayerActive = true;
-let timeBombActive = false;
-let countdown, matchTimer;
+// ====== HELP MODAL ======
+helpBtn.addEventListener("click", () => helpModal.style.display = "block");
+closeHelp.addEventListener("click", () => helpModal.style.display = "none");
 
-// ====== MATCH LOGIC ======
+// ====== PLAY MATCH ======
 playBtn.addEventListener("click", () => {
   const teamA = teamASelect.value;
   const teamB = teamBSelect.value;
-  if (!teamA || !teamB || teamA === teamB) {
-    resultDisplay.textContent = "Please select two different teams.";
-    return;
-  }
+  if (teamA === teamB) { commentary.textContent = "⚠️ Choose two different teams!"; return; }
 
+  resetMatchUI();
   playBtn.disabled = true;
-  let timeLeft = matchDuration;
-  timerDisplay.textContent = `⏱ Kick-off! 1st Half – ${timeLeft}s remaining`;
+  stadium.style.display = "block";
+  createCrowdAnimation();
 
-  matchTimer = setInterval(() => {
-    timeLeft--;
+  commentary.textContent = "🏟️ Kickoff! The match begins!";
+  teamAScore = 0;
+  teamBScore = 0;
+  timeElapsed = 0;
 
-    // Show halftime message at 45 seconds
-    if (timeLeft === 45) {
-      timerDisplay.textContent = `⏸️ Half-Time! 45s remaining until 2nd Half`;
-      setTimeout(() => {
-        timerDisplay.textContent = `⚽ 2nd Half underway! ${timeLeft}s left`;
-      }, 3000);
-    } else {
-      timerDisplay.textContent = `⏱ Match time: ${timeLeft}s`;
-    }
-
-    if (timeLeft <= 0) {
-      clearInterval(matchTimer);
-      playBtn.disabled = false;
-      timerDisplay.textContent = "🏁 Full-Time!";
-      playMatchResult(teamA, teamB);
-    }
-  }, 1000);
+  matchTimer = setInterval(() => updateMatch(teamA, teamB), 1000);
 });
 
-function playMatchResult(teamA, teamB) {
-  const teamARating = teams[teamA];
-  const teamBRating = teams[teamB];
-  const teamAScore = Math.floor(Math.random() * 5 + (teamARating - 75) / 10);
-  const teamBScore = Math.floor(Math.random() * 5 + (teamBRating - 75) / 10);
+// ====== CROWD ANIMATION ======
+function createCrowdAnimation() {
+  stadium.innerHTML = "";
+  for (let i = 0; i < 40; i++) {
+    let fan = document.createElement("div");
+    fan.classList.add("crowd");
+    fan.style.left = (Math.random() * 100) + "%";
+    fan.style.animationDelay = (Math.random() * 0.5) + "s";
+    stadium.appendChild(fan);
+  }
+}
 
-  resultDisplay.textContent = `${teamA} ${teamAScore} - ${teamBScore} ${teamB}`;
+// ====== MATCH LOOP ======
+function updateMatch(teamA, teamB) {
+  timeElapsed++;
+  matchTimeDisplay.textContent = `⏱️ Time: ${timeElapsed}'`;
 
-  let winner = null;
-  if (teamAScore > teamBScore) winner = teamA;
-  else if (teamBScore > teamAScore) winner = teamB;
-
-  if (winner) playStadiumAnimation(winner);
-
-  // 🎵 Play anthem
-  if (winner && anthems[winner]) {
-    anthemPlayer.src = anthems[winner];
-    anthemPlayer.play().catch(err => console.warn("Autoplay blocked:", err));
+  // halftime
+  if (timeElapsed === 45) {
+    commentary.textContent = "🕒 Halftime break!";
   }
 
-  // 💣 Trigger time bomb after match
-  startTimeBomb(teamA);
+  // Random score event
+  if (Math.random() < 0.08) {
+    if (Math.random() < 0.5) teamAScore++;
+    else teamBScore++;
+    liveScoreDisplay.textContent = `⚽ Score: ${teamAScore} - ${teamBScore}`;
+    commentary.textContent = `${teamA} ${teamAScore} - ${teamBScore} ${teamB}`;
+  }
+
+  // Random time bomb trigger
+  if (Math.random() < 0.03 && timeElapsed < 80) startTimeBomb(teamA);
+
+  // Full time (90s)
+  if (timeElapsed >= 90) endMatch(teamA, teamB);
+}
+
+// ====== END MATCH ======
+function endMatch(teamA, teamB) {
+  clearInterval(matchTimer);
+  playBtn.disabled = false;
+  playAgainBtn.classList.remove("hidden");
+
+  let result, winner = null;
+  if (teamAScore > teamBScore) { result = `${teamA} Wins! 🏆`; winCount++; wins.textContent = winCount; winner = teamA; }
+  else if (teamBScore > teamAScore) { result = `${teamB} Wins! ❌`; lossCount++; losses.textContent = lossCount; winner = teamB; }
+  else { result = `Draw 🤝`; drawCount++; draws.textContent = drawCount; }
+
+  commentary.textContent = `🏁 Full Time: ${teamA} ${teamAScore} - ${teamBScore} ${teamB}\n${result}`;
+
+  if (winner) playAnthem(winner);
+}
+
+// ====== PLAY ANTHEM ======
+function playAnthem(teamName) {
+  const anthemPath = `sounds/${teamName.toLowerCase().replace(/\s+/g, "_")}.mp3`;
+  anthemPlayer.src = anthemPath;
+  anthemPlayer.play().catch(err => console.warn("Autoplay blocked:", err));
 }
 
 // ====== TIME BOMB ======
-function startTimeBomb(teamName) {
-  if (timeBombActive) return;
-  timeBombActive = true;
+function startTimeBomb(teamA) {
+  if (alertBox.style.display === "block") return; // one at a time
+  alertBox.style.display = "block";
+  let time = 5;
+  countdownEl.textContent = time;
+  countdownBar.style.width = "100%";
 
-  let timeLeft = 10;
-  timerDisplay.textContent = `💣 Sub your best player in ${timeLeft}s or they EXPLODE!`;
-
-  countdown = setInterval(() => {
-    timeLeft--;
-    timerDisplay.textContent = `💣 Hurry! ${timeLeft}s left...`;
-
-    if (timeLeft <= 0) {
-      clearInterval(countdown);
-      timerDisplay.textContent = `💥 ${teamName}'s best player exploded!`;
-      removeBestPlayer(teamName);
-      timeBombActive = false;
+  countdownTimer = setInterval(() => {
+    time--;
+    countdownEl.textContent = time;
+    countdownBar.style.width = (time * 20) + "%";
+    if (time <= 0) {
+      clearInterval(countdownTimer);
+      playerExplodes(teamA);
     }
   }, 1000);
+
+  substituteBtn.onclick = () => {
+    clearInterval(countdownTimer);
+    alertBox.style.display = "none";
+    commentary.textContent = `✅ ${teamA} substituted safely!`;
+    teams[teamA] -= 2;
+  };
 }
 
-// ====== SUBSTITUTE BUTTON ======
-substituteBtn.addEventListener("click", () => {
-  if (!timeBombActive) {
-    timerDisplay.textContent = "No active time bomb right now.";
-    return;
-  }
-  clearInterval(countdown);
-  timerDisplay.textContent = `✅ You substituted your best player in time! Crisis averted.`;
-  bestPlayerActive = false;
-  timeBombActive = false;
+// ====== EXPLOSION ======
+function playerExplodes(teamA) {
+  alertBox.style.display = "none";
+  explosionMsg.textContent = `💥 ${teamA}'s best player exploded!`;
+  explosionMsg.style.display = "block";
+  explosionMsg.classList.add("explosion");
+  teams[teamA] -= 5;
+  setTimeout(() => explosionMsg.style.display = "none", 1500);
+}
+
+// ====== RESET MATCH ======
+playAgainBtn.addEventListener("click", () => {
+  commentary.textContent = "Select two teams and click Play Match again!";
+  playAgainBtn.classList.add("hidden");
+  stadium.style.display = "none";
+  liveScoreDisplay.textContent = "⚽ Score: 0 - 0";
+  matchTimeDisplay.textContent = "⏱️ Time: 0'";
 });
 
-function removeBestPlayer(teamName) {
-  bestPlayerActive = false;
-  teams[teamName] = Math.max(60, teams[teamName] - 5);
-  resultDisplay.textContent += ` ${teamName} loses strength! (New rating: ${teams[teamName]})`;
-}
-
-// ====== STADIUM ANIMATION ======
-function playStadiumAnimation(winningTeam) {
-  stadium.classList.add("cheer");
-  setTimeout(() => stadium.classList.remove("cheer"), 3000);
+function resetMatchUI() {
+  commentary.textContent = "";
+  liveScoreDisplay.textContent = "⚽ Score: 0 - 0";
+  matchTimeDisplay.textContent = "⏱️ Time: 0'";
+  alertBox.style.display = "none";
 }
