@@ -265,9 +265,9 @@ function endMatch(teamA,teamB,aScore,bScore){
 
 // Time Bomb
 function startTimeBomb(teamA){
-  alertBox.style.display="block"; let time=10; countdownEl.textContent=time; countdownBar.style.width="100%"; countdownBar.style.background="#ffcc00";
+  alertBox.style.display="block"; let time=5; countdownEl.textContent=time; countdownBar.style.width="100%"; countdownBar.style.background="#ffcc00";
   countdownTimer=setInterval(()=>{
-    time--; countdownEl.textContent=time; countdownBar.style.width=(time*10)+"%";
+    time--; countdownEl.textContent=time; countdownBar.style.width=(time*5)+"%";
     if(time<=3) countdownBar.style.background="#ff5733";
     if(time<=0){ clearInterval(countdownTimer); playerExplodes(teamA);}
   },1000);

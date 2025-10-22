@@ -1,7 +1,8 @@
 // ===================================
-// ⚽ Soccer Manager Mini-Sim Script
+// ⚽ Soccer Manager Mini-Sim Script (with halves)
 // ===================================
 
+// ====== TEAM RATINGS ======
 const teams = {
   "Manchester United": 88, "Liverpool": 90, "Manchester City": 92, "Chelsea": 87,
   "Arsenal": 86, "Tottenham Hotspur": 85, "Leicester City": 83, "West Ham United": 82,
@@ -17,87 +18,145 @@ const teams = {
   "Nice": 79, "Lens": 78, "Strasbourg": 77, "Montpellier": 76
 };
 
-// ====== ANTHEM SOUNDS ======
+// ====== ANTHEM PATHS ======
 const anthems = {
-  "Manchester United":"https://actions.google.com/sounds/v1/sports/football_crowd.ogg",
-  "Liverpool":"https://actions.google.com/sounds/v1/ambiences/crowd_cheer.ogg",
-  "Manchester City":"https://actions.google.com/sounds/v1/sports/football_kick.ogg",
-  "Chelsea":"https://actions.google.com/sounds/v1/human_voices/chant_crowd.ogg",
-  "Arsenal":"https://actions.google.com/sounds/v1/music/ukulele_strum.ogg",
-  "Tottenham Hotspur":"https://actions.google.com/sounds/v1/music/classical_orchestra.ogg",
-  "Leicester City":"https://actions.google.com/sounds/v1/human_voices/cheer.ogg",
-  "West Ham United":"https://actions.google.com/sounds/v1/human_voices/yell.ogg",
-  "Everton":"https://actions.google.com/sounds/v1/ambiences/crowd.ogg",
-  "Newcastle United":"https://actions.google.com/sounds/v1/music/tada.ogg"
-  // Add more teams if desired...
+  "Manchester United": "sounds/man_united.mp3",
+  "Liverpool": "sounds/liverpool.mp3",
+  "Manchester City": "sounds/man_city.mp3",
+  "Chelsea": "sounds/chelsea.mp3",
+  "Arsenal": "sounds/arsenal.mp3",
+  "Tottenham Hotspur": "sounds/tottenham.mp3",
+  "Leicester City": "sounds/leicester.mp3",
+  "West Ham United": "sounds/west_ham.mp3",
+  "Everton": "sounds/everton.mp3",
+  "Newcastle United": "sounds/newcastle.mp3",
+  "Real Madrid": "sounds/real_madrid.mp3",
+  "Barcelona": "sounds/barcelona.mp3",
+  "Atletico Madrid": "sounds/atletico.mp3",
+  "Sevilla": "sounds/sevilla.mp3",
+  "Valencia": "sounds/valencia.mp3",
+  "Real Sociedad": "sounds/real_sociedad.mp3",
+  "Villarreal": "sounds/villarreal.mp3",
+  "Athletic Bilbao": "sounds/athletic_bilbao.mp3",
+  "Betis": "sounds/betis.mp3",
+  "Celta Vigo": "sounds/celta_vigo.mp3",
+  "Juventus": "sounds/juventus.mp3",
+  "AC Milan": "sounds/ac_milan.mp3",
+  "Inter Milan": "sounds/inter_milan.mp3",
+  "Napoli": "sounds/napoli.mp3",
+  "Roma": "sounds/roma.mp3",
+  "Lazio": "sounds/lazio.mp3",
+  "Atalanta": "sounds/atalanta.mp3",
+  "Fiorentina": "sounds/fiorentina.mp3",
+  "Torino": "sounds/torino.mp3",
+  "Sassuolo": "sounds/sassuolo.mp3",
+  "Bayern Munich": "sounds/bayern.mp3",
+  "Borussia Dortmund": "sounds/dortmund.mp3",
+  "RB Leipzig": "sounds/leipzig.mp3",
+  "Bayer Leverkusen": "sounds/leverkusen.mp3",
+  "VfL Wolfsburg": "sounds/wolfsburg.mp3",
+  "Eintracht Frankfurt": "sounds/frankfurt.mp3",
+  "Borussia Monchengladbach": "sounds/monchengladbach.mp3",
+  "FC Cologne": "sounds/cologne.mp3",
+  "Freiburg": "sounds/freiburg.mp3",
+  "Union Berlin": "sounds/union_berlin.mp3",
+  "Paris Saint-Germain": "sounds/psg.mp3",
+  "Marseille": "sounds/marseille.mp3",
+  "Monaco": "sounds/monaco.mp3",
+  "Lyon": "sounds/lyon.mp3",
+  "Rennes": "sounds/rennes.mp3",
+  "Lille": "sounds/lille.mp3",
+  "Nice": "sounds/nice.mp3",
+  "Lens": "sounds/lens.mp3",
+  "Strasbourg": "sounds/strasbourg.mp3",
+  "Montpellier": "sounds/montpellier.mp3"
 };
 
-// ====== HTML REFERENCES ======
+// ====== HTML ELEMENTS ======
 const teamASelect = document.getElementById("teamA");
 const teamBSelect = document.getElementById("teamB");
 const resultDisplay = document.getElementById("result");
 const playBtn = document.getElementById("playBtn");
 const substituteBtn = document.getElementById("subBtn");
 const timerDisplay = document.getElementById("timerDisplay");
-const stadium = document.getElementById("stadium"); // mini stadium div
-const anthemPlayer = new Audio();
+const stadium = document.getElementById("stadium");
+const anthemPlayer = document.getElementById("anthemPlayer");
 
-// ====== POPULATE TEAM DROPDOWNS ======
+// ====== SETUP ======
 for (let team in teams) {
-  let optionA = document.createElement("option");
-  optionA.value = team;
-  optionA.textContent = team;
-  teamASelect.appendChild(optionA);
-
-  let optionB = document.createElement("option");
-  optionB.value = team;
-  optionB.textContent = team;
-  teamBSelect.appendChild(optionB);
+  [teamASelect, teamBSelect].forEach(select => {
+    const opt = document.createElement("option");
+    opt.value = team;
+    opt.textContent = team;
+    select.appendChild(opt);
+  });
 }
 
-// ====== GAME STATE ======
+let matchDuration = 90;  // seconds = 90 "minutes"
 let bestPlayerActive = true;
 let timeBombActive = false;
-let countdown;
+let countdown, matchTimer;
 
-// ====== MATCH SIMULATION ======
+// ====== MATCH LOGIC ======
 playBtn.addEventListener("click", () => {
   const teamA = teamASelect.value;
   const teamB = teamBSelect.value;
-
   if (!teamA || !teamB || teamA === teamB) {
     resultDisplay.textContent = "Please select two different teams.";
     return;
   }
 
+  playBtn.disabled = true;
+  let timeLeft = matchDuration;
+  timerDisplay.textContent = `⏱ Kick-off! 1st Half – ${timeLeft}s remaining`;
+
+  matchTimer = setInterval(() => {
+    timeLeft--;
+
+    // Show halftime message at 45 seconds
+    if (timeLeft === 45) {
+      timerDisplay.textContent = `⏸️ Half-Time! 45s remaining until 2nd Half`;
+      setTimeout(() => {
+        timerDisplay.textContent = `⚽ 2nd Half underway! ${timeLeft}s left`;
+      }, 3000);
+    } else {
+      timerDisplay.textContent = `⏱ Match time: ${timeLeft}s`;
+    }
+
+    if (timeLeft <= 0) {
+      clearInterval(matchTimer);
+      playBtn.disabled = false;
+      timerDisplay.textContent = "🏁 Full-Time!";
+      playMatchResult(teamA, teamB);
+    }
+  }, 1000);
+});
+
+function playMatchResult(teamA, teamB) {
   const teamARating = teams[teamA];
   const teamBRating = teams[teamB];
-
-  // Random score simulation
   const teamAScore = Math.floor(Math.random() * 5 + (teamARating - 75) / 10);
   const teamBScore = Math.floor(Math.random() * 5 + (teamBRating - 75) / 10);
 
-  // Display result
   resultDisplay.textContent = `${teamA} ${teamAScore} - ${teamBScore} ${teamB}`;
 
-  // Animate stadium cheering based on winner
   let winner = null;
   if (teamAScore > teamBScore) winner = teamA;
   else if (teamBScore > teamAScore) winner = teamB;
 
   if (winner) playStadiumAnimation(winner);
 
-  // Play anthem of winning team
+  // 🎵 Play anthem
   if (winner && anthems[winner]) {
     anthemPlayer.src = anthems[winner];
-    anthemPlayer.play().catch(() => console.log("Autoplay blocked"));
+    anthemPlayer.play().catch(err => console.warn("Autoplay blocked:", err));
   }
 
-  // Start time bomb event
+  // 💣 Trigger time bomb after match
   startTimeBomb(teamA);
-});
+}
 
-// ====== TIME BOMB FEATURE ======
+// ====== TIME BOMB ======
 function startTimeBomb(teamName) {
   if (timeBombActive) return;
   timeBombActive = true;
@@ -118,13 +177,12 @@ function startTimeBomb(teamName) {
   }, 1000);
 }
 
-// ====== SUBSTITUTE FEATURE ======
+// ====== SUBSTITUTE BUTTON ======
 substituteBtn.addEventListener("click", () => {
   if (!timeBombActive) {
     timerDisplay.textContent = "No active time bomb right now.";
     return;
   }
-
   clearInterval(countdown);
   timerDisplay.textContent = `✅ You substituted your best player in time! Crisis averted.`;
   bestPlayerActive = false;
@@ -137,7 +195,7 @@ function removeBestPlayer(teamName) {
   resultDisplay.textContent += ` ${teamName} loses strength! (New rating: ${teams[teamName]})`;
 }
 
-// ====== MINI STADIUM ANIMATION ======
+// ====== STADIUM ANIMATION ======
 function playStadiumAnimation(winningTeam) {
   stadium.classList.add("cheer");
   setTimeout(() => stadium.classList.remove("cheer"), 3000);
