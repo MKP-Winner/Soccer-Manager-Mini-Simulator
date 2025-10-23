@@ -162,14 +162,18 @@ button:hover { background: #03045e; }
     1️⃣ Select two different teams.<br>
     2️⃣ Click "Play Match" to start.<br>
     3️⃣ Substitute your player if time bomb appears.<br>
-    4️⃣ Watch the mini stadium animation.<br>
-    5️⃣ Background music plays throughout the game.
+    4️⃣ Winning team anthem plays at the end.<br>
+    5️⃣ Watch the mini stadium animation.
   </p>
   <button id="close-help">Close</button>
 </div>
 
-<!-- 🎵 Single background music file (looped) -->
-<audio id="Heat-Waves" src="sounds/Heat Waves.mp3" autoplay loop></audio>
+<audio autoplay loop>
+  <source src="Heat Waves.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+
+<audio id="myAudio" src="Heat Waves.mp3" loop muted></audio>
 
 <script>
 // Teams
@@ -206,11 +210,7 @@ const draws=document.getElementById("draws");
 const helpBtn=document.getElementById("help-btn");
 const helpModal=document.getElementById("help-modal");
 const closeHelp=document.getElementById("close-help");
-const gameMusic=document.getElementById("game-music");
-
-// Loop and play background music
-gameMusic.volume = 0.5;
-gameMusic.play().catch(()=>{ console.log("Music autoplay blocked. User interaction required."); });
+const anthemPlayer=document.getElementById("anthem-player");
 
 let winCount=0, lossCount=0, drawCount=0, countdownTimer;
 

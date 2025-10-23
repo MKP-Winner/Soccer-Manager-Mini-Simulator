@@ -18,9 +18,6 @@ const teams = {
   "Nice": 79, "Lens": 78, "Strasbourg": 77, "Montpellier": 76
 };
 
-const bgMusic = document.getElementById("Heat-Waves");
-bgMusic.volume = 0.5; // Set volume between 0 (mute) and 1 (max)
-
 // ====== HTML REFERENCES ======
 const teamASelect = document.getElementById("teamA");
 const teamBSelect = document.getElementById("teamB");
@@ -176,4 +173,18 @@ playAgainBtn.addEventListener("click", () => {
   liveScoreDiv.textContent = "";
   playAgainBtn.classList.add("hidden");
   stadium.style.display = "none";
+});
+
+// Create a new Audio object
+const audio = new Audio("Heat Waves.mp3");
+
+// Set it to loop
+audio.loop = true;
+
+// Optional: mute to bypass autoplay restrictions
+// audio.muted = true;
+
+// Play the audio when the script runs
+audio.play().catch(error => {
+  console.log("Autoplay blocked by browser:", error);
 });
