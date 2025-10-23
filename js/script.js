@@ -18,59 +18,8 @@ const teams = {
   "Nice": 79, "Lens": 78, "Strasbourg": 77, "Montpellier": 76
 };
 
-// ====== ANTHEM SOUND PATHS ======
-const anthems = {
-  "Manchester United": "sounds/man_united.mp3",
-  "Liverpool": "sounds/liverpool.mp3",
-  "Manchester City": "sounds/man_city.mp3",
-  "Chelsea": "sounds/chelsea.mp3",
-  "Arsenal": "sounds/arsenal.mp3",
-  "Tottenham Hotspur": "sounds/tottenham.mp3",
-  "Leicester City": "sounds/leicester.mp3",
-  "West Ham United": "sounds/west_ham.mp3",
-  "Everton": "sounds/everton.mp3",
-  "Newcastle United": "sounds/newcastle.mp3",
-  "Real Madrid": "sounds/real_madrid.mp3",
-  "Barcelona": "sounds/barcelona.mp3",
-  "Atletico Madrid": "sounds/atletico.mp3",
-  "Sevilla": "sounds/sevilla.mp3",
-  "Valencia": "sounds/valencia.mp3",
-  "Real Sociedad": "sounds/real_sociedad.mp3",
-  "Villarreal": "sounds/villarreal.mp3",
-  "Athletic Bilbao": "sounds/athletic_bilbao.mp3",
-  "Betis": "sounds/betis.mp3",
-  "Celta Vigo": "sounds/celta_vigo.mp3",
-  "Juventus": "sounds/juventus.mp3",
-  "AC Milan": "sounds/ac_milan.mp3",
-  "Inter Milan": "sounds/inter_milan.mp3",
-  "Napoli": "sounds/napoli.mp3",
-  "Roma": "sounds/roma.mp3",
-  "Lazio": "sounds/lazio.mp3",
-  "Atalanta": "sounds/atalanta.mp3",
-  "Fiorentina": "sounds/fiorentina.mp3",
-  "Torino": "sounds/torino.mp3",
-  "Sassuolo": "sounds/sassuolo.mp3",
-  "Bayern Munich": "sounds/bayern.mp3",
-  "Borussia Dortmund": "sounds/dortmund.mp3",
-  "RB Leipzig": "sounds/leipzig.mp3",
-  "Bayer Leverkusen": "sounds/leverkusen.mp3",
-  "VfL Wolfsburg": "sounds/wolfsburg.mp3",
-  "Eintracht Frankfurt": "sounds/frankfurt.mp3",
-  "Borussia Monchengladbach": "sounds/monchengladbach.mp3",
-  "FC Cologne": "sounds/cologne.mp3",
-  "Freiburg": "sounds/freiburg.mp3",
-  "Union Berlin": "sounds/union_berlin.mp3",
-  "Paris Saint-Germain": "sounds/psg.mp3",
-  "Marseille": "sounds/marseille.mp3",
-  "Monaco": "sounds/monaco.mp3",
-  "Lyon": "sounds/lyon.mp3",
-  "Rennes": "sounds/rennes.mp3",
-  "Lille": "sounds/lille.mp3",
-  "Nice": "sounds/nice.mp3",
-  "Lens": "sounds/lens.mp3",
-  "Strasbourg": "sounds/strasbourg.mp3",
-  "Montpellier": "sounds/montpellier.mp3"
-};
+const bgMusic = document.getElementById("Heat-Waves");
+bgMusic.volume = 0.5; // Set volume between 0 (mute) and 1 (max)
 
 // ====== HTML REFERENCES ======
 const teamASelect = document.getElementById("teamA");
@@ -135,14 +84,15 @@ playBtn.addEventListener("click", () => {
 
   timeElapsed = 0; teamAScore = 0; teamBScore = 0; isHalftime = false;
   commentary.textContent = "🏟️ Match Kickoff!";
-  updateLiveScore();
+  updateLiveScore(); // initial score display
   matchInterval = setInterval(() => updateMatch(teamA, teamB), 1000);
 });
 
-// ====== UPDATE MATCH ======
+// ====== UPDATE MATCH FUNCTION ======
 function updateMatch(teamA, teamB) {
   if (!isHalftime) timeElapsed++;
 
+  // Halftime at 45'
   if (!isHalftime && timeElapsed === 45) {
     isHalftime = true;
     updateLiveScore();
@@ -155,14 +105,21 @@ function updateMatch(teamA, teamB) {
   }
 
   if (!isHalftime) {
+    // Random scoring events
     if (Math.random() < 0.08) { if (Math.random() < 0.5) teamAScore++; else teamBScore++; }
+
+    // Random time bomb
     if (Math.random() < 0.03 && timeElapsed < 80) startTimeBomb(teamA);
+
+    // Update live score
     updateLiveScore();
+
+    // End of match
     if (timeElapsed >= 90) endMatch(teamA, teamB);
   }
 }
 
-// ====== LIVE SCORE ======
+// ====== LIVE SCORE DISPLAY ======
 function updateLiveScore() {
   liveScoreDiv.textContent = `⏱️ Time: ${timeElapsed}' | ${teamASelect.value} ${teamAScore} - ${teamBScore} ${teamBSelect.value}`;
 }
@@ -207,8 +164,6 @@ function endMatch(teamA, teamB) {
   // Play anthem
   if (winner && anthems[winner]) {
     anthemPlayer.src = anthems[winner];
-    anthemPlayer.volume = 0.5;
-    anthemPlayer.currentTime = 0;
     anthemPlayer.play().catch(err => console.warn("Autoplay blocked", err));
   }
 
