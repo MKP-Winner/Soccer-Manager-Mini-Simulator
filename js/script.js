@@ -1,5 +1,5 @@
 // ===================================
-// ⚽ Soccer Manager Mini-Sim Script (AUDIO FIXED WITH DEDICATED BUTTON)
+// ⚽ Soccer Manager Mini-Sim Script - AI Generated
 // ===================================
 
 // ====== TEAM RATINGS ======
@@ -18,13 +18,22 @@ const teams = {
   "Nice": 79, "Lens": 78, "Strasbourg": 77, "Montpellier": 76
 };
 
-// 🎧 AUDIO CONFIG: Define the background track (needed only for reference)
+// 🎧 AUDIO CONFIG: Song list - AI Generated
 const anthems = {
-    "default": "Heat Waves.mp3" 
+    "Heat Waves": "Heat Waves.mp3", 
+    "The Nights": "The Nights.mp3",
+    "Rodeo": "Rodeo.mp3",
+    "Richer": "Richer.mp3",
+    "Killa": "Killa.mp3",
+    "Mbappe": "Mbappe.mp3",
+    "No Music": null 
 };
 
+// AI Generated
+const helpVideoURL = "CTI-110 Project Help Video.mp4"; 
 
-// ====== HTML REFERENCES ======
+
+// ====== HTML REFERENCES ====== - AI Generated
 const teamASelect=document.getElementById("teamA");
 const teamBSelect=document.getElementById("teamB");
 const playBtn=document.getElementById("playMatch");
@@ -43,55 +52,106 @@ const helpBtn=document.getElementById("help-btn");
 const helpModal=document.getElementById("help-modal");
 const closeHelp=document.getElementById("close-help");
 const anthemPlayer=document.getElementById("anthem-player");
-
-// 🎧 NEW REFERENCE: For the music button
 const toggleMusicBtn = document.getElementById("toggleMusic"); 
+const songSelect = document.getElementById("songSelect");
 
 let winCount=0, lossCount=0, drawCount=0, countdownTimer;
-let isMusicPlaying = false; // New state tracker
+let isMusicPlaying = false; 
 
-// 🎧 AUDIO FIX: Configure the player initially
-anthemPlayer.src = anthems["default"];
-anthemPlayer.loop = true;
-anthemPlayer.volume = 0.3; // Low background volume
-// We assume the HTML audio tag is present and linked via 'anthem-player'
-
-// ====== MUSIC TOGGLE FUNCTION ======
-function toggleBackgroundMusic() {
+// 🎧 AUDIO SETUP FUNCTION - AI Generated
+function setupAudioPlayer(trackName) {
     if (isMusicPlaying) {
         anthemPlayer.pause();
-        toggleMusicBtn.textContent = "▶️ Start Background Music";
         isMusicPlaying = false;
-    } else {
-        // Crucial step: Set muted=false and volume before playing
-        anthemPlayer.muted = false;
+        toggleMusicBtn.textContent = "▶️ Start Background Music";
+    }
+
+    const trackPath = anthems[trackName];
+
+    if (trackPath) {
+        anthemPlayer.src = trackPath;
+        anthemPlayer.loop = true;
         anthemPlayer.volume = 0.3;
-        // The .play() call now happens after a direct user click on this button
-        anthemPlayer.play().then(() => {
-            toggleMusicBtn.textContent = "⏸️ Pause Background Music";
-            isMusicPlaying = true;
-        }).catch(err => {
-            console.error("Audio playback failed:", err);
-            toggleMusicBtn.textContent = "❌ Audio Error (Check console/file)";
-            isMusicPlaying = false;
-        });
+        anthemPlayer.muted = false; 
+        anthemPlayer.load(); 
+        toggleMusicBtn.disabled = false;
+        toggleMusicBtn.textContent = "▶️ Start Background Music";
+    } else {
+        anthemPlayer.removeAttribute('src');
+        anthemPlayer.load();
+        toggleMusicBtn.disabled = true;
+        toggleMusicBtn.textContent = "No Track Selected";
     }
 }
 
-// 🎧 MUSIC TOGGLE EVENT LISTENER
-toggleMusicBtn.addEventListener("click", toggleBackgroundMusic);
+// ====== POPULATE SONGS AND TEAMS ====== - AI Generated
+function populateSongs() {
+    Object.keys(anthems).forEach(trackName => {
+        let option = document.createElement("option");
+        option.value = trackName;
+        option.textContent = trackName;
+        songSelect.appendChild(option);
+    });
+    songSelect.selectedIndex = 0;
+    setupAudioPlayer(songSelect.value);
+}
 
-// ====== POPULATE TEAMS AND HELP MODAL (Unchanged) ======
+// Populate teams - AI Generated
 Object.keys(teams).forEach(team=>{
   let optA=document.createElement("option"); optA.value=team; optA.textContent=team; teamASelect.appendChild(optA);
   let optB=document.createElement("option"); optB.value=team; optB.textContent=team; teamBSelect.appendChild(optB);
 });
 teamASelect.selectedIndex=0; teamBSelect.selectedIndex=1;
 
-helpBtn.addEventListener("click",()=>helpModal.style.display="block");
+// Call populate songs function - AI Generated
+populateSongs();
+
+// 🎧 SONG SELECT CHANGE LISTENER - AI Generated
+songSelect.addEventListener("change", () => {
+    setupAudioPlayer(songSelect.value);
+});
+
+
+// ====== MUSIC TOGGLE FUNCTION ====== - AI Generated
+function toggleBackgroundMusic() {
+    if (anthemPlayer.getAttribute('src') === null) {
+        toggleMusicBtn.textContent = "Please select a song first!";
+        return;
+    }
+
+    if (isMusicPlaying) {
+        anthemPlayer.pause();
+        toggleMusicBtn.textContent = "▶️ Start Background Music";
+        isMusicPlaying = false;
+    } else {
+        anthemPlayer.muted = false;
+        anthemPlayer.volume = 0.3;
+        
+        anthemPlayer.play().then(() => {
+            toggleMusicBtn.textContent = "⏸️ Pause Background Music";
+            isMusicPlaying = true;
+        }).catch(err => {
+            console.error("Audio playback failed. Error:", err);
+            toggleMusicBtn.textContent = "❌ Audio Error (Check console/file)";
+            isMusicPlaying = false;
+        });
+    }
+}
+
+// 🎧 MUSIC TOGGLE EVENT LISTENER - AI Generated
+if (toggleMusicBtn) {
+    toggleMusicBtn.addEventListener("click", toggleBackgroundMusic);
+}
+
+// ====== HELP BUTTON CHANGE: OPENS VIDEO IN NEW TAB ====== - AI Generated
+helpBtn.addEventListener("click",()=>{
+    window.open(helpVideoURL, '_blank');
+});
+
+// AI Generated
 closeHelp.addEventListener("click",()=>helpModal.style.display="none");
 
-// ====== STADIUM ANIMATION (Unchanged) ======
+// ====== STADIUM ANIMATION (Unchanged) ====== - AI Generated
 function createCrowdAnimation(){
   for(let i=0;i<40;i++){
     let fan=document.createElement("div");
@@ -102,7 +162,7 @@ function createCrowdAnimation(){
   }
 }
 
-// ====== PLAY MATCH (Music logic removed from here) ======
+// ====== PLAY MATCH (Music ducking logic) ====== -  Not AI Generated
 playBtn.addEventListener("click",()=>{
   const teamA=teamASelect.value, teamB=teamBSelect.value;
   if(teamA===teamB){ commentary.textContent="⚠️ Choose two different teams!"; return; }
@@ -110,14 +170,14 @@ playBtn.addEventListener("click",()=>{
   stadium.style.display="block"; stadium.innerHTML=""; createCrowdAnimation();
   commentary.textContent="🏟️ Match Kickoff!";
   
-  // 🎧 Dim music slightly when the match starts
+  // 🎧 Dim music slightly when the match starts - Not AI Generated
   if (isMusicPlaying) anthemPlayer.volume = 0.2; 
   
   simulateMatch(teamA,teamB);
 });
 
 
-// Match simulation (Unchanged - uses original setTimeout)
+// Match simulation (Unchanged - uses original setTimeout) - AI Generated
 function simulateMatch(teamA,teamB){
   const aScore=Math.floor(Math.random()*3);
   const bScore=Math.floor(Math.random()*3);
@@ -125,13 +185,11 @@ function simulateMatch(teamA,teamB){
   setTimeout(()=>commentary.textContent=`${teamB} defends...`,2500);
   setTimeout(()=>commentary.textContent=`🔥 ${teamA} shoots!`,4000);
   setTimeout(()=>commentary.textContent=`⚽ ${teamB} counters!`,5500);
-  // Time Bomb starts the countdown (and dims music)
-  setTimeout(()=>startTimeBomb(teamA),3000); 
-  // Match ends (and restores music volume)
+  setTimeout(()=>startTimeBomb(teamA),3000);
   setTimeout(()=>endMatch(teamA,teamB,aScore,bScore),8000); 
 }
 
-// End match (Restores music volume)
+// End match (Restores music volume) - AI Generated
 function endMatch(teamA,teamB,aScore,bScore){
   let result, winner=null;
   if(aScore>bScore){ result=`${teamA} Wins! 🏆`; winCount++; wins.textContent=winCount; winner=teamA;}
@@ -140,26 +198,25 @@ function endMatch(teamA,teamB,aScore,bScore){
   commentary.textContent=`🏁 Final Score: ${teamA} ${aScore} - ${bScore} ${teamB}\n${result}`;
   playBtn.disabled=false; playAgainBtn.classList.remove("hidden");
   
-  // 🎧 Restore music volume
+  // 🎧 Restore music volume - Not AI Generated
   if (isMusicPlaying) anthemPlayer.volume = 0.3;
 }
 
-// Time Bomb (Volume Ducking)
+// Time Bomb (Volume Ducking) - Not AI Generated
 function startTimeBomb(teamA){
   alertBox.style.display="block"; 
   let time=5; countdownEl.textContent=time; 
   countdownBar.style.width="100%"; countdownBar.style.background="#ffcc00";
   
-  // 🎧 Lower volume for alert
+  // 🎧 Lower volume for alert - Not AI Generated
   if (isMusicPlaying) anthemPlayer.volume = 0.1;
   
   countdownTimer=setInterval(()=>{
-    time--; countdownEl.textContent=time; countdownBar.style.width=(time*20)+"%"; // Changed to 20% for 5s
+    time--; countdownEl.textContent=time; countdownBar.style.width=(time*20)+"%"; 
     if(time<=3) countdownBar.style.background="#ff5733";
     if(time<=0){ 
         clearInterval(countdownTimer); 
         playerExplodes(teamA);
-        // 🎧 Restore volume on explosion if playing
         if (isMusicPlaying) anthemPlayer.volume = 0.3; 
     }
   }, 1000);
@@ -169,12 +226,11 @@ function startTimeBomb(teamA){
     alertBox.style.display="none"; 
     commentary.textContent=`✅ ${teamA} substituted player safely.`; 
     teams[teamA]-=2;
-    // 🎧 Restore volume on substitute if playing
     if (isMusicPlaying) anthemPlayer.volume = 0.3; 
   };
 }
 
-// Explosion effect (Unchanged)
+// Explosion effect (Unchanged) - AI Generated
 function playerExplodes(teamA){
   alertBox.style.display="none";
   explosionMsg.textContent=`💥 ${teamA}'s best player exploded! Team rating -5`;
@@ -184,7 +240,7 @@ function playerExplodes(teamA){
   commentary.textContent=`😱 ${teamA} lost a key player!`;
 }
 
-// Reset (Unchanged)
+// Reset (Unchanged) - AI Generated
 playAgainBtn.addEventListener("click",()=>{ 
     commentary.textContent="Select two teams and click Play Match again!"; 
     playAgainBtn.classList.add("hidden"); 
